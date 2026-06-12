@@ -1,0 +1,2367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2D5016">
+<title>Catálogo Vivero Multigrupo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --verde: #2D5016;
+    --verde-claro: #4A7A28;
+    --verde-hover: #3d6b1e;
+    --crema: #F8F4E8;
+    --crema-oscura: #EDE8D5;
+    --terracota: #C4845A;
+    --blanco: #FDFAF4;
+    --musgo: #6B7B5E;
+    --musgo-claro: #8FA080;
+    --texto: #1C2B10;
+    --texto-suave: #4A5A3A;
+    --borde: #D5CEB8;
+    --sombra: rgba(45, 80, 22, 0.12);
+    --radius: 12px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--crema);
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--verde);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: var(--terracota);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    color: var(--crema);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .logo-text span { display: block; font-size: 0.7rem; font-family: 'Inter', sans-serif; font-weight: 300; opacity: 0.75; letter-spacing: 0.1em; text-transform: uppercase; }
+  .search-bar {
+    flex: 1; min-width: 200px;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    color: var(--crema);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: background 0.2s;
+  }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.5); }
+  .search-bar input:focus { background: rgba(255,255,255,0.22); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: rgba(255,255,255,0.55); font-size: 16px; pointer-events: none;
+  }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    padding: 9px 18px;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500;
+    transition: all 0.18s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--terracota); color: white; }
+  .btn-primary:hover { background: #b3734a; transform: translateY(-1px); }
+  .btn-ghost { background: rgba(255,255,255,0.12); color: var(--crema); border: 1px solid rgba(255,255,255,0.2); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+  .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+  .btn-outline { background: transparent; color: var(--verde); border: 1.5px solid var(--verde); }
+  .btn-outline:hover { background: var(--verde); color: white; }
+  .btn-danger { background: #c0392b; color: white; }
+  .btn-danger:hover { background: #a93226; }
+
+  /* ── MAIN LAYOUT ── */
+  .main-layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+  }
+
+  /* ── SIDEBAR FILTERS ── */
+  .sidebar {
+    position: sticky;
+    top: 80px;
+    height: fit-content;
+  }
+  .filter-card {
+    background: var(--blanco);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--borde);
+    margin-bottom: 16px;
+  }
+  .filter-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--musgo);
+    margin-bottom: 12px;
+  }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--borde);
+    background: white; color: var(--texto-suave); font-size: 0.8rem;
+    cursor: pointer; margin: 3px 3px 3px 0; transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .filter-chip:hover { border-color: var(--verde); color: var(--verde); }
+  .filter-chip.active { background: var(--verde); color: white; border-color: var(--verde); }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-box {
+    background: var(--crema);
+    border-radius: 8px; padding: 12px; text-align: center;
+  }
+  .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--verde); font-family: 'Playfair Display', serif; }
+  .stat-lbl { font-size: 0.7rem; color: var(--musgo); margin-top: 2px; }
+
+  /* ── CATALOG GRID ── */
+  .catalog-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+  }
+  .catalog-count {
+    font-size: 0.85rem; color: var(--musgo);
+  }
+  .catalog-count strong { color: var(--texto); }
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn {
+    padding: 7px 10px; border: 1.5px solid var(--borde);
+    background: white; border-radius: 6px; cursor: pointer;
+    color: var(--musgo); transition: all 0.15s; font-size: 14px;
+  }
+  .view-btn.active { background: var(--verde); color: white; border-color: var(--verde); }
+
+  .plant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .plant-grid.list-view {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── PLANT CARD ── */
+  .plant-card {
+    background: var(--blanco);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--borde);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .plant-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px var(--sombra);
+  }
+  .card-type-bar {
+    height: 4px;
+    background: var(--verde-claro);
+  }
+  .card-type-bar.arbol { background: #2D5016; }
+  .card-type-bar.arbusto { background: #4A7A28; }
+  .card-type-bar.herbácea, .card-type-bar.herbacea { background: #7BAE3E; }
+  .card-type-bar.suculenta { background: #C4845A; }
+  .card-type-bar.trepadora { background: #6B7B5E; }
+  .card-type-bar.palma { background: #A0522D; }
+  .card-type-bar.cactus { background: #8B6914; }
+  .card-type-bar.acuática, .card-type-bar.acuatica { background: #2980B9; }
+
+  .card-img-wrap {
+    height: 180px; overflow: hidden; background: var(--crema-oscura);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.3s;
+  }
+  .plant-card:hover .card-img-wrap img { transform: scale(1.05); }
+  .no-img { font-size: 3rem; opacity: 0.3; }
+  .card-code-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(45,80,22,0.85); color: white;
+    font-size: 0.7rem; padding: 3px 8px; border-radius: 20px;
+    font-weight: 600; letter-spacing: 0.05em;
+    backdrop-filter: blur(4px);
+  }
+  .card-body { padding: 16px; }
+  .card-sci-name {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--musgo);
+    margin-bottom: 4px;
+  }
+  .card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+  .tag {
+    font-size: 0.7rem; padding: 2px 8px;
+    border-radius: 12px; border: 1px solid var(--borde);
+    color: var(--musgo); background: var(--crema);
+  }
+  .tag.luz-alta { background: #FFF3CD; border-color: #F0AD4E; color: #856404; }
+  .tag.luz-media { background: #D4EDDA; border-color: #28A745; color: #155724; }
+  .tag.luz-sombra { background: #D1ECF1; border-color: #17A2B8; color: #0C5460; }
+  .card-price {
+    font-size: 1.2rem; font-weight: 700;
+    color: var(--verde);
+    font-family: 'Playfair Display', serif;
+  }
+  .card-actions {
+    display: flex; gap: 6px; margin-top: 12px;
+  }
+  .card-actions .btn { flex: 1; justify-content: center; font-size: 0.75rem; }
+
+  /* LIST VIEW CARD */
+  .plant-grid.list-view .plant-card {
+    display: grid;
+    grid-template-columns: 4px 120px 1fr auto;
+    align-items: stretch;
+    border-radius: var(--radius);
+  }
+  .plant-grid.list-view .card-type-bar { width: 4px; height: auto; border-radius: 0; }
+  .plant-grid.list-view .card-img-wrap { height: auto; min-height: 100px; }
+  .plant-grid.list-view .card-body { display: flex; align-items: center; gap: 20px; }
+  .plant-grid.list-view .card-body > div { flex: 1; }
+  .plant-grid.list-view .card-actions { flex-direction: column; padding: 16px; justify-content: center; width: auto; margin-top: 0; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--musgo);
+    grid-column: 1/-1;
+  }
+  .empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--texto-suave); margin-bottom: 8px; }
+
+  /* ── MODAL BASE ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(20, 30, 15, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--blanco);
+    border-radius: var(--radius-lg);
+    width: 100%; max-width: 720px;
+    max-height: 90vh; overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.25s;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  }
+  .modal-backdrop.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--borde);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: var(--blanco); z-index: 1;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .modal-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--texto);
+  }
+  .close-btn {
+    width: 32px; height: 32px;
+    border: none; background: var(--crema); border-radius: 50%;
+    cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+    color: var(--musgo); transition: background 0.15s;
+  }
+  .close-btn:hover { background: var(--borde); }
+
+  /* ── FORM ── */
+  .modal-body { padding: 24px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1/-1; }
+  .form-group label {
+    font-size: 0.78rem; font-weight: 600; color: var(--musgo);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 10px 14px;
+    border: 1.5px solid var(--borde);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--texto);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--verde-claro); }
+  .form-group textarea { resize: vertical; min-height: 80px; }
+  .img-preview-wrap {
+    border: 2px dashed var(--borde); border-radius: 8px;
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s; position: relative;
+    background: var(--crema);
+  }
+  .img-preview-wrap:hover { border-color: var(--verde-claro); }
+  .img-preview-wrap img { max-height: 140px; border-radius: 6px; }
+  .img-hint { font-size: 0.8rem; color: var(--musgo); margin-top: 6px; }
+  .form-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding: 20px 24px; border-top: 1px solid var(--borde);
+    position: sticky; bottom: 0; background: var(--blanco);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+
+  /* ── DETAIL MODAL ── */
+  .detail-modal { max-width: 820px; }
+  .detail-hero {
+    height: 280px; overflow: hidden; background: var(--crema-oscura);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    position: relative;
+  }
+  .detail-hero img { width: 100%; height: 100%; object-fit: cover; }
+  .detail-hero-placeholder { font-size: 5rem; opacity: 0.25; }
+  .detail-type-stripe {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 5px;
+  }
+  .detail-content { padding: 28px; }
+  .detail-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+  .detail-names { flex: 1; }
+  .detail-code { font-size: 0.75rem; color: var(--musgo); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .detail-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: var(--texto); line-height: 1.2; }
+  .detail-sci { font-family: 'Playfair Display', serif; font-style: italic; color: var(--musgo); font-size: 1rem; margin-top: 4px; }
+  .detail-price { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--verde); white-space: nowrap; }
+  .detail-desc {
+    background: var(--crema); border-radius: 8px; padding: 14px 16px;
+    color: var(--texto-suave); font-size: 0.9rem; line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .detail-specs {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .spec-item {
+    background: white; border: 1px solid var(--borde);
+    border-radius: 10px; padding: 14px;
+  }
+  .spec-icon { font-size: 1.3rem; margin-bottom: 4px; }
+  .spec-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--musgo); font-weight: 600; margin-bottom: 3px; }
+  .spec-value { font-size: 0.9rem; font-weight: 500; color: var(--texto); }
+  .qr-section {
+    background: var(--verde);
+    border-radius: 12px; padding: 20px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .qr-box {
+    background: white; padding: 10px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 130px; min-height: 130px;
+  }
+  .qr-info { color: white; flex: 1; }
+  .qr-info h4 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 6px; }
+  .qr-info p { font-size: 0.82rem; opacity: 0.8; line-height: 1.5; }
+  .qr-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn-white { background: white; color: var(--verde); }
+  .btn-white:hover { background: var(--crema); }
+
+  /* ── IMPORT MODAL ── */
+  .import-zone {
+    border: 2.5px dashed var(--borde); border-radius: 12px;
+    padding: 40px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--crema);
+  }
+  .import-zone:hover, .import-zone.drag-over {
+    border-color: var(--verde-claro); background: #edf5e6;
+  }
+  .import-zone .zone-icon { font-size: 3rem; margin-bottom: 10px; }
+  .import-zone h3 { font-size: 1rem; font-weight: 600; color: var(--texto); margin-bottom: 6px; }
+  .import-zone p { font-size: 0.83rem; color: var(--musgo); }
+  .template-info {
+    background: #EBF5FB; border-radius: 10px; padding: 16px; margin-top: 16px;
+    border-left: 4px solid #2980B9;
+  }
+  .template-info h4 { font-size: 0.85rem; font-weight: 600; color: #1A5276; margin-bottom: 6px; }
+  .template-info p { font-size: 0.8rem; color: #1F618D; line-height: 1.5; }
+  .column-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .col-chip { background: white; border: 1px solid #85C1E9; color: #1A5276; font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; }
+  .preview-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.8rem; }
+  .preview-table th { background: var(--verde); color: white; padding: 8px 12px; text-align: left; }
+  .preview-table td { padding: 8px 12px; border-bottom: 1px solid var(--borde); }
+  .preview-table tr:hover td { background: var(--crema); }
+  .import-log { max-height: 180px; overflow-y: auto; background: #1C2B10; border-radius: 8px; padding: 12px; margin-top: 12px; }
+  .import-log p { font-size: 0.78rem; color: #8FA080; font-family: monospace; margin: 2px 0; }
+  .import-log p.ok { color: #7BCC52; }
+  .import-log p.err { color: #E74C3C; }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--texto); color: white; padding: 12px 18px;
+    border-radius: 8px; font-size: 0.85rem; max-width: 300px;
+    transform: translateX(120%); transition: transform 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { background: var(--verde); }
+  .toast.error { background: #c0392b; }
+  .toast.info { background: #2980B9; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-specs { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .header-inner { padding: 10px 14px; }
+    .main-layout { padding: 14px; }
+    .detail-name { font-size: 1.4rem; }
+    .detail-top { flex-direction: column; }
+    .qr-section { flex-direction: column; }
+    .plant-grid.list-view .plant-card { grid-template-columns: 4px 90px 1fr; }
+    .plant-grid.list-view .card-actions { flex-direction: row; padding: 12px; grid-column: 1/-1; }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--borde); border-radius: 4px; }
+
+  /* ── LOGO IMAGE ── */
+  .logo-icon img {
+    width: 38px; height: 38px;
+    border-radius: 50%; object-fit: contain;
+    background: white; padding: 2px;
+  }
+  /* ── SETTINGS MODAL ── */
+  .logo-upload-zone {
+    border: 2px dashed var(--borde); border-radius: 12px;
+    padding: 30px; text-align: center; cursor: pointer;
+    background: var(--crema); transition: all 0.2s;
+    position: relative;
+  }
+  .logo-upload-zone:hover { border-color: var(--verde-claro); background: #edf5e6; }
+  .logo-current {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--verde); border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 16px;
+  }
+  .logo-current img { width: 56px; height: 56px; object-fit: contain; background: white; border-radius: 8px; padding: 4px; }
+  .logo-current-info { color: white; }
+  .logo-current-info strong { display: block; font-size: .95rem; }
+  .logo-current-info span { font-size: .78rem; opacity: .75; }
+
+  /* ══ LOGIN OVERLAY ══ */
+  #loginOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--verde);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+  }
+  .login-card {
+    background: var(--blanco); border-radius: 24px;
+    padding: 40px 36px; width: 100%; max-width: 380px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+    text-align: center;
+  }
+  .login-logo { font-size: 3.5rem; margin-bottom: 8px; }
+  .login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 700; color: var(--texto);
+    margin-bottom: 4px;
+  }
+  .login-sub { font-size: .82rem; color: var(--musgo); margin-bottom: 28px; }
+  .login-field {
+    width: 100%; padding: 12px 16px;
+    border: 2px solid var(--borde); border-radius: 10px;
+    font-family: 'Inter', sans-serif; font-size: 1rem;
+    outline: none; transition: border-color .15s;
+    margin-bottom: 14px; background: white; color: var(--texto);
+  }
+  .login-field:focus { border-color: var(--verde-claro); }
+  .login-btn {
+    width: 100%; padding: 13px;
+    background: var(--verde); color: white;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
+    transition: background .15s;
+  }
+  .login-btn:hover { background: var(--verde-hover); }
+  .login-error {
+    background: #fde8e8; color: #c0392b; border-radius: 8px;
+    padding: 10px 14px; font-size: .84rem; margin-top: 12px;
+    display: none;
+  }
+  .login-hint { font-size: .75rem; color: var(--musgo); margin-top: 16px; }
+  /* lock icon on header when logged in */
+  #logoutBtn { display: none; }
+
+  /* ══ PESTAÑA QR ══ */
+  .tab-bar {
+    display: flex; gap: 0; border-bottom: 2px solid var(--borde);
+    margin-bottom: 20px; overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 10px 20px; border: none; background: none;
+    font-family: 'Inter', sans-serif; font-size: .88rem; font-weight: 500;
+    color: var(--musgo); cursor: pointer; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; white-space: nowrap; transition: all .15s;
+  }
+  .tab-btn:hover { color: var(--verde); }
+  .tab-btn.active { color: var(--verde); border-bottom-color: var(--verde); font-weight: 600; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* QR grid */
+  .qr-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .qr-item-card {
+    background: var(--blanco); border: 1px solid var(--borde);
+    border-radius: var(--radius); padding: 16px; text-align: center;
+  }
+  .qr-item-card .qr-render { margin: 0 auto 10px; display: inline-block; }
+  .qr-item-name { font-weight: 600; font-size: .88rem; color: var(--texto); margin-bottom: 2px; }
+  .qr-item-code { font-size: .75rem; color: var(--musgo); margin-bottom: 10px; }
+  .qr-item-url  { font-size: .65rem; color: var(--musgo-claro); word-break: break-all;
+                   background: var(--crema); border-radius: 6px; padding: 4px 6px;
+                   margin-bottom: 10px; line-height: 1.4; }
+  .qr-item-actions { display: flex; gap: 6px; justify-content: center; }
+  .qr-status-badge {
+    display: inline-block; font-size: .68rem; padding: 2px 8px;
+    border-radius: 10px; margin-bottom: 8px; font-weight: 600;
+  }
+  .qr-status-badge.saved { background: #D4EDDA; color: #155724; }
+  .qr-status-badge.pending { background: #FFF3CD; color: #856404; }
+  .qr-generate-bar {
+    background: var(--blanco); border: 1px solid var(--borde);
+    border-radius: var(--radius); padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+  }
+  .qr-generate-bar p { font-size: .85rem; color: var(--texto-suave); }
+  .qr-generate-bar strong { color: var(--texto); }
+
+  /* ══ MODAL IMPRESIÓN QR ══ */
+  .print-preview-wrap {
+    background: var(--crema); border-radius: 12px;
+    padding: 24px; display: flex; justify-content: center;
+    margin-bottom: 20px; min-height: 200px; align-items: center;
+  }
+  .label-preview {
+    background: white; border: 2px solid #2D5016;
+    border-radius: 12px; padding: 16px 20px; text-align: center;
+    font-family: sans-serif; display: inline-block;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  }
+  .label-preview .lp-logo { margin-bottom: 8px; min-height: 28px; display: flex; align-items: center; justify-content: center; }
+  .label-preview .lp-logo img { max-height: 28px; max-width: 100px; object-fit: contain; }
+  .label-preview .lp-code { font-size: 10px; color: #6B7B5E; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+  .label-preview .lp-qr { margin: 0 auto 8px; }
+  .label-preview .lp-name { font-size: 13px; font-weight: 700; color: #1C2B10; line-height: 1.2; max-width: 160px; }
+  .label-preview .lp-vivero { font-size: 9px; color: #6B7B5E; margin-top: 6px; }
+  .print-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .print-opt-group { display: flex; flex-direction: column; gap: 5px; }
+  .print-opt-group label { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--musgo); }
+  .print-opt-group select, .print-opt-group input[type=number] {
+    padding: 8px 12px; border: 1.5px solid var(--borde); border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: .88rem; background: white; color: var(--texto);
+  }
+  .copies-row { display: flex; align-items: center; gap: 8px; }
+  .copies-row button {
+    width: 28px; height: 28px; border: 1.5px solid var(--borde); border-radius: 6px;
+    background: white; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--texto);
+  }
+  .copies-row input { width: 60px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN OVERLAY ══ -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo" id="loginLogoWrap">🌿</div>
+    <div class="login-title">Vivero Multigrupo</div>
+    <div class="login-sub">Panel de Administración</div>
+    <input class="login-field" type="text"     id="loginUser" placeholder="Usuario" autocomplete="username">
+    <input class="login-field" type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">🔐 Ingresar</button>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+    <div class="login-hint">Solo el administrador del catálogo puede ingresar aquí.</div>
+  </div>
+</div>
+
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon" id="logoIconWrap">🌿</div>
+      <div class="logo-text">Vivero Multigrupo<span>Catálogo de Plantas</span></div>
+    </a>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, código, familia…">
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" title="Ajustes del catálogo" onclick="openSettingsModal()">⚙️ Ajustes</button>
+      <button class="btn btn-ghost" onclick="openImportModal()">📥 Importar Excel</button>
+      <button class="btn btn-primary" onclick="openFormModal()">+ Nueva Planta</button>
+      <button class="btn btn-ghost" id="logoutBtn" title="Cerrar sesión" onclick="doLogout()" style="opacity:.75">🔒 Salir</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="filter-card">
+      <div class="filter-title">Estadísticas</div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total plantas</div></div>
+        <div class="stat-box"><div class="stat-num" id="statFamilias">0</div><div class="stat-lbl">Familias</div></div>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-title">Tipo de Planta</div>
+      <div id="filterTipo">
+        <span class="filter-chip active" data-filter="tipo" data-value="">Todas</span>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-title">Requerimiento de Luz</div>
+      <div id="filterLuz">
+        <span class="filter-chip active" data-filter="luz" data-value="">Todas</span>
+        <span class="filter-chip" data-filter="luz" data-value="Alta">☀️ Alta</span>
+        <span class="filter-chip" data-filter="luz" data-value="Media">🌤 Media</span>
+        <span class="filter-chip" data-filter="luz" data-value="Sombra">🌧 Sombra</span>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-title">Tipo de Riego</div>
+      <div id="filterRiego">
+        <span class="filter-chip active" data-filter="riego" data-value="">Todos</span>
+        <span class="filter-chip" data-filter="riego" data-value="Abundante">💧💧 Abundante</span>
+        <span class="filter-chip" data-filter="riego" data-value="Moderado">💧 Moderado</span>
+        <span class="filter-chip" data-filter="riego" data-value="Escaso">🏜 Escaso</span>
+      </div>
+    </div>
+    <button class="btn btn-outline" style="width:100%;justify-content:center" onclick="exportData()">📤 Exportar Excel</button>
+  </aside>
+
+  <!-- CATALOG -->
+  <main>
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabCatalogo" onclick="switchTab('catalogo')">🌿 Catálogo</button>
+      <button class="tab-btn" id="tabQR" onclick="switchTab('qr')">📱 Códigos QR</button>
+    </div>
+
+    <!-- PANE: CATÁLOGO -->
+    <div class="tab-pane active" id="paneCatalogo">
+      <div class="catalog-header">
+        <div class="catalog-count"><strong id="countVisible">0</strong> plantas mostradas</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="view-toggle">
+            <button class="view-btn active" id="btnGrid" title="Cuadrícula" onclick="setView('grid')">⊞</button>
+            <button class="view-btn" id="btnList" title="Lista" onclick="setView('list')">☰</button>
+          </div>
+        </div>
+      </div>
+      <div class="plant-grid" id="plantGrid"></div>
+    </div>
+
+    <!-- PANE: CÓDIGOS QR -->
+    <div class="tab-pane" id="paneQR">
+      <div class="qr-generate-bar">
+        <div>
+          <strong>Gestión de Códigos QR</strong>
+          <p>Cada QR apunta a la ficha pública de la planta. Se genera y guarda automáticamente en la BD.</p>
+        </div>
+        <button class="btn btn-primary" onclick="generateAllQRs()">⚡ Generar QRs faltantes</button>
+      </div>
+      <div id="qrTabInfo" style="margin-bottom:14px"></div>
+      <div class="qr-catalog-grid" id="qrGrid"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL: FORM PLANTA ═══ -->
+<div class="modal-backdrop" id="formModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="formModalTitle">🌱 Nueva Planta</h2>
+      <button class="close-btn" onclick="closeFormModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Código Interno *</label>
+          <input type="text" id="f_codigo" placeholder="P-001">
+        </div>
+        <div class="form-group">
+          <label>Precio de Venta (COP)</label>
+          <input type="number" id="f_precio" placeholder="15000" min="0">
+        </div>
+        <div class="form-group full">
+          <label>Nombre del Producto *</label>
+          <input type="text" id="f_nombre" placeholder="Nombre común">
+        </div>
+        <div class="form-group">
+          <label>Nombre Científico</label>
+          <input type="text" id="f_cientifico" placeholder="Genus species">
+        </div>
+        <div class="form-group">
+          <label>Familia Botánica</label>
+          <input type="text" id="f_familia" placeholder="Ej: Araceae">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Planta</label>
+          <select id="f_tipo">
+            <option value="">— Seleccionar —</option>
+            <option>Árbol</option><option>Arbusto</option><option>Herbácea</option>
+            <option>Suculenta</option><option>Trepadora</option><option>Palma</option>
+            <option>Cactus</option><option>Acuática</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Requerimiento de Luz</label>
+          <select id="f_luz">
+            <option value="">— Seleccionar —</option>
+            <option value="Alta">☀️ Alta (pleno sol)</option>
+            <option value="Media">🌤 Media (sol parcial)</option>
+            <option value="Sombra">🌧 Sombra (poca luz)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de Riego</label>
+          <select id="f_riego">
+            <option value="">— Seleccionar —</option>
+            <option value="Abundante">Abundante</option>
+            <option value="Moderado">Moderado</option>
+            <option value="Escaso">Escaso</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Frecuencia de Riego</label>
+          <input type="text" id="f_frecuencia" placeholder="Ej: 2 veces por semana">
+        </div>
+        <div class="form-group">
+          <label>Fertilización</label>
+          <input type="text" id="f_fertilizacion" placeholder="Ej: Mensual, abono orgánico">
+        </div>
+        <div class="form-group">
+          <label>Poda Recomendada</label>
+          <input type="text" id="f_poda" placeholder="Ej: Anual, formativa">
+        </div>
+        <div class="form-group full">
+          <label>Descripción</label>
+          <textarea id="f_descripcion" placeholder="Descripción de la planta, características, usos…"></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Imagen de la Planta</label>
+          <div class="img-preview-wrap" id="imgDropZone" onclick="document.getElementById('imgInput').click()">
+            <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImgSelect(this)">
+            <div id="imgPreviewContent">
+              <div style="font-size:2.5rem">📷</div>
+              <div class="img-hint">Clic para seleccionar imagen (JPG, PNG, WEBP)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" id="deleteBtn" style="display:none;margin-right:auto" onclick="deletePlant()">🗑 Eliminar</button>
+      <button class="btn btn-ghost" style="color:var(--texto)" onclick="closeFormModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePlant()">💾 Guardar Planta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: DETALLE PLANTA ═══ -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal detail-modal">
+    <div class="modal-header" style="border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+      <h2>Detalle de Planta</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline" onclick="editFromDetail()">✏️ Editar</button>
+        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+      </div>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: IMPORTAR EXCEL ═══ -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal" style="max-width:680px">
+    <div class="modal-header">
+      <h2>📥 Importar desde Excel</h2>
+      <button class="close-btn" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-zone" id="importZone" onclick="document.getElementById('excelInput').click()">
+        <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelFile(this)">
+        <div class="zone-icon">📊</div>
+        <h3>Arrastra tu archivo Excel aquí</h3>
+        <p>o haz clic para seleccionar un archivo (.xlsx, .xls, .csv)</p>
+      </div>
+
+      <div class="template-info">
+        <h4>📋 Columnas esperadas en el archivo</h4>
+        <p>Nombra las columnas exactamente así (el orden no importa):</p>
+        <div class="column-chips">
+          <span class="col-chip">codigo</span>
+          <span class="col-chip">nombre</span>
+          <span class="col-chip">descripcion</span>
+          <span class="col-chip">cientifico</span>
+          <span class="col-chip">familia</span>
+          <span class="col-chip">tipo</span>
+          <span class="col-chip">luz</span>
+          <span class="col-chip">riego</span>
+          <span class="col-chip">frecuencia</span>
+          <span class="col-chip">fertilizacion</span>
+          <span class="col-chip">poda</span>
+          <span class="col-chip">precio</span>
+        </div>
+        <p style="margin-top:8px">💡 Si un código ya existe, el registro se actualizará.</p>
+      </div>
+
+      <div id="importPreview" style="display:none">
+        <h4 style="margin-top:16px;font-size:0.9rem;font-weight:600">Vista previa (primeras 5 filas)</h4>
+        <div style="overflow-x:auto">
+          <table class="preview-table" id="previewTable"></table>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+          <button class="btn btn-ghost" style="color:var(--texto)" onclick="cancelImport()">Cancelar</button>
+          <button class="btn btn-primary" id="confirmImportBtn" onclick="confirmImport()">✅ Importar datos</button>
+        </div>
+        <div class="import-log" id="importLog" style="display:none"></div>
+      </div>
+      <div style="margin-top:16px;text-align:center">
+        <button class="btn btn-ghost" style="color:var(--verde)" onclick="downloadTemplate()">⬇️ Descargar plantilla de ejemplo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL: AJUSTES ═══ -->
+<div class="modal-backdrop" id="settingsModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2>⚙️ Ajustes del Catálogo</h2>
+      <button class="close-btn" onclick="closeSettingsModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div id="logoCurrentWrap" style="display:none">
+        <p style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--musgo);margin-bottom:8px">Logo actual</p>
+        <div class="logo-current">
+          <img id="logoCurrentPreview" src="" alt="Logo">
+          <div class="logo-current-info">
+            <strong>Vivero Multigrupo</strong>
+            <span>Logo cargado correctamente</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--musgo);margin-bottom:8px">Subir logotipo</p>
+      <div class="logo-upload-zone" id="logoUploadZone" onclick="document.getElementById('logoFileInput').click()">
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+        <div style="font-size:2.5rem;margin-bottom:8px">🖼️</div>
+        <p style="font-weight:600;color:var(--texto);margin-bottom:4px">Clic para seleccionar tu logo</p>
+        <p style="font-size:.8rem;color:var(--musgo)">PNG, JPG o SVG · Recomendado: fondo transparente (PNG)</p>
+      </div>
+
+      <div style="background:var(--crema);border-radius:8px;padding:12px 14px;margin-top:14px;font-size:.82rem;color:var(--musgo);line-height:1.6">
+        💡 El logo se sube a Supabase y queda centralizado — todos los dispositivos y colaboradores verán el mismo logo automáticamente.<br><span id="logoSaveStatus" style="display:none;font-weight:600;color:var(--verde)"></span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
+        <button class="btn btn-danger btn-sm" id="removeLogoBtn" style="display:none" onclick="removeLogo()">🗑 Quitar logo</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--texto);margin-left:auto" onclick="closeSettingsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL: IMPRIMIR QR ═══ -->
+<div class="modal-backdrop" id="printModal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h2>🖨 Imprimir Etiqueta QR</h2>
+      <button class="close-btn" onclick="closePrintModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Preview viva -->
+      <p style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--musgo);margin-bottom:8px">Vista previa de la etiqueta</p>
+      <div class="print-preview-wrap">
+        <div class="label-preview" id="labelPreview">
+          <div class="lp-logo" id="lpLogo">🌿</div>
+          <div class="lp-code" id="lpCode">P-001</div>
+          <div class="lp-qr" id="lpQrBox"></div>
+          <div class="lp-name" id="lpName">Nombre de la planta</div>
+          <div class="lp-vivero">Vivero Multigrupo</div>
+        </div>
+      </div>
+
+      <!-- Opciones -->
+      <p style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--musgo);margin-bottom:10px">Opciones de impresión</p>
+      <div class="print-options">
+        <div class="print-opt-group">
+          <label>Tamaño de etiqueta</label>
+          <select id="printSize" onchange="updateLabelPreview()">
+            <option value="sm">Pequeño (5×5 cm)</option>
+            <option value="md" selected>Mediano (7×7 cm)</option>
+            <option value="lg">Grande (10×10 cm)</option>
+          </select>
+        </div>
+        <div class="print-opt-group">
+          <label>Número de copias</label>
+          <div class="copies-row">
+            <button onclick="changeCopies(-1)">−</button>
+            <input type="number" id="printCopies" value="1" min="1" max="50">
+            <button onclick="changeCopies(1)">+</button>
+          </div>
+        </div>
+        <div class="print-opt-group">
+          <label>Mostrar precio</label>
+          <select id="printShowPrice" onchange="updateLabelPreview()">
+            <option value="no">No mostrar</option>
+            <option value="si">Mostrar precio</option>
+          </select>
+        </div>
+        <div class="print-opt-group">
+          <label>Mostrar nombre científico</label>
+          <select id="printShowSci" onchange="updateLabelPreview()">
+            <option value="no">No mostrar</option>
+            <option value="si">Mostrar</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="background:var(--crema);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--musgo)">
+        💡 Se abrirá el diálogo de impresión del navegador. Elige tu impresora o guarda como PDF.
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" style="color:var(--texto)" onclick="closePrintModal()">Cancelar</button>
+      <button class="btn btn-outline" onclick="downloadCurrentQR()">⬇️ Descargar QR</button>
+      <button class="btn btn-primary" onclick="doPrint()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  ⚙️  CONFIGURACIÓN SUPABASE — EDITA ESTOS DOS VALORES
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://tppgokbroksdzcwkyjok.supabase.co';   // ← pega tu Project URL
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwcGdva2Jyb2tzZHpjd2t5am9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcwNzcsImV4cCI6MjA5NjYyMzA3N30.SG5AFx9q-ZbmcAfXSOiQxCofD08JUVgfGSSDlR6AB54';                   // ← pega tu anon public key
+const BUCKET_NAME   = 'imagenes-plantas';                      // nombre del bucket que creaste
+
+// ── Helpers REST de Supabase (sin SDK, puro fetch) ──
+const SB = {
+  headers: (extra={}) => ({
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    ...extra
+  }),
+  // SELECT
+  async select(table, params='') {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers: SB.headers() });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  // INSERT
+  async insert(table, data) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method:'POST', headers: SB.headers({'Prefer':'return=representation'}), body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  // UPDATE por columna
+  async update(table, match, data) {
+    const q = Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${q}`, {
+      method:'PATCH', headers: SB.headers({'Prefer':'return=representation'}), body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  // UPSERT (insert or update por codigo)
+  async upsert(table, data) {
+    const h = {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'resolution=merge-duplicates,return=representation'
+    };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=codigo`, {
+      method:'POST', headers: h, body: JSON.stringify(data)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  },
+  // DELETE
+  async delete(table, match) {
+    const q = Object.entries(match).map(([k,v])=>`${k}=eq.${encodeURIComponent(v)}`).join('&');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${q}`, {
+      method:'DELETE', headers: SB.headers()
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return true;
+  },
+  // UPLOAD imagen al Storage
+  async uploadImage(file, path) {
+    const h = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
+                 'Content-Type': file.type, 'x-upsert': 'true' };
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET_NAME}/${path}`, {
+      method:'POST', headers: h, body: file
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${path}`;
+  }
+};
+
+// Detectar si Supabase está configurado
+const SB_CONFIGURED = SUPABASE_URL !== 'https://TU_PROJECT_URL.supabase.co' && SUPABASE_KEY !== 'TU_ANON_PUBLIC_KEY';
+
+// ═══════════════════════════════════════════════════
+//  DATA STORE
+// ═══════════════════════════════════════════════════
+let plants = [];
+let editingId = null;
+let currentDetailId = null;
+let currentImportData = [];
+let activeFilters = { tipo: '', luz: '', riego: '', search: '' };
+let currentView = 'grid';
+let imgBase64 = null;
+let imgFile = null; // archivo original para subir a Storage
+
+const BASE_URL = window.location.href.split('?')[0];
+
+// ── Normalizar fila de Supabase → objeto interno ──
+function fromDB(row) {
+  return { ...row, imagen: row.imagen_url || null, qr_url: row.qr_url || buildQrUrl(row.codigo) };
+}
+
+async function loadData() {
+  if (!SB_CONFIGURED) {
+    showConfigBanner();
+    return;
+  }
+  try {
+    showLoader(true);
+    const rows = await SB.select('plantas', 'order=created_at.desc');
+    plants = rows.map(fromDB);
+  } catch(e) {
+    toast('Error cargando datos: ' + e.message, 'error');
+    plants = [];
+  } finally {
+    showLoader(false);
+  }
+}
+
+function showLoader(on) {
+  let el = document.getElementById('globalLoader');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'globalLoader';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4A7A28,#C4845A);z-index:9999;transition:opacity .3s';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = on ? '1' : '0';
+}
+
+function showConfigBanner() {
+  const b = document.createElement('div');
+  b.style.cssText = 'background:#856404;color:white;padding:10px 24px;font-size:.85rem;text-align:center;position:sticky;top:68px;z-index:99';
+  b.innerHTML = '⚠️ <strong>Modo demo:</strong> Supabase no está configurado. Abre el archivo HTML y pega tu SUPABASE_URL y SUPABASE_KEY para activar la base de datos.';
+  document.body.insertBefore(b, document.body.children[1]);
+  // Cargar datos de demo
+  plants = [
+    { id:'demo-1', codigo:'P-001', nombre:'Anturio Rojo', cientifico:'Anthurium andraeanum', familia:'Araceae', tipo:'Herbácea', luz:'Media', riego:'Moderado', frecuencia:'2 veces por semana', fertilizacion:'Mensual con abono foliar', poda:'Eliminar flores y hojas secas', precio:25000, descripcion:'Planta ornamental de interior con vistosas flores en espata de color rojo brillante.', imagen:null },
+    { id:'demo-2', codigo:'P-002', nombre:'Palma Areca', cientifico:'Dypsis lutescens', familia:'Arecaceae', tipo:'Palma', luz:'Alta', riego:'Moderado', frecuencia:'3 veces por semana', fertilizacion:'Bimestral', poda:'Eliminar palmas secas', precio:45000, descripcion:'Palma elegante de porte mediano, perfecta para interiores luminosos.', imagen:null },
+    { id:'demo-3', codigo:'S-001', nombre:'Echeveria Rosada', cientifico:'Echeveria subsessilis', familia:'Crassulaceae', tipo:'Suculenta', luz:'Alta', riego:'Escaso', frecuencia:'Cada 15 días', fertilizacion:'Cada 3 meses', poda:'No requiere', precio:12000, descripcion:'Suculenta de roseta compacta con tonos rosados en los bordes de sus hojas.', imagen:null },
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+function filteredPlants() {
+  const s = activeFilters.search.toLowerCase();
+  return plants.filter(p => {
+    if (activeFilters.tipo && (p.tipo || '').toLowerCase() !== activeFilters.tipo.toLowerCase()) return false;
+    if (activeFilters.luz && (p.luz || '') !== activeFilters.luz) return false;
+    if (activeFilters.riego && (p.riego || '') !== activeFilters.riego) return false;
+    if (s) {
+      const hay = [p.codigo, p.nombre, p.cientifico, p.familia, p.tipo, p.descripcion].join(' ').toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  });
+}
+
+function renderCatalog() {
+  const fp = filteredPlants();
+  const grid = document.getElementById('plantGrid');
+  document.getElementById('countVisible').textContent = fp.length;
+
+  // Stats
+  const tipos = [...new Set(plants.map(p => p.familia).filter(Boolean))];
+  document.getElementById('statTotal').textContent = plants.length;
+  document.getElementById('statFamilias').textContent = tipos.length;
+
+  // Dynamic tipo filters
+  const tiposAll = [...new Set(plants.map(p => p.tipo).filter(Boolean))].sort();
+  const fTipo = document.getElementById('filterTipo');
+  const curTipo = activeFilters.tipo;
+  fTipo.innerHTML = `<span class="filter-chip ${!curTipo?'active':''}" data-filter="tipo" data-value="">Todas</span>`;
+  tiposAll.forEach(t => {
+    const c = document.createElement('span');
+    c.className = 'filter-chip' + (curTipo===t?' active':'');
+    c.dataset.filter = 'tipo'; c.dataset.value = t;
+    c.textContent = t;
+    fTipo.appendChild(c);
+  });
+
+  if (fp.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🌱</div><h3>${plants.length===0?'Aún no hay plantas en el catálogo':'Sin resultados para esta búsqueda'}</h3><p style="font-size:.85rem;margin-top:6px">${plants.length===0?'Agrega una nueva planta o importa desde Excel':'Intenta con otros filtros o busca diferente'}</p></div>`;
+    return;
+  }
+
+  grid.className = 'plant-grid' + (currentView==='list'?' list-view':'');
+  grid.innerHTML = fp.map(p => cardHTML(p)).join('');
+  attachCardEvents();
+}
+
+function cardHTML(p) {
+  const tipo = (p.tipo||'').toLowerCase().replace(/á/g,'a').replace(/é/g,'e').replace(/ó/g,'o');
+  const luzClass = p.luz==='Alta'?'luz-alta':p.luz==='Media'?'luz-media':p.luz==='Sombra'?'luz-sombra':'';
+  const precio = p.precio ? `$${Number(p.precio).toLocaleString('es-CO')}` : '—';
+  const img = p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}" loading="lazy">` : `<div class="no-img">🌿</div>`;
+  return `
+  <div class="plant-card" data-id="${p.id}">
+    <div class="card-type-bar ${tipo}"></div>
+    <div class="card-img-wrap">
+      ${img}
+      ${p.codigo?`<div class="card-code-badge">${p.codigo}</div>`:''}
+    </div>
+    <div class="card-body">
+      <div>
+        ${p.cientifico?`<div class="card-sci-name">${p.cientifico}</div>`:''}
+        <div class="card-name">${p.nombre||'Sin nombre'}</div>
+        <div class="card-tags">
+          ${p.tipo?`<span class="tag">${p.tipo}</span>`:''}
+          ${p.luz?`<span class="tag ${luzClass}">${p.luz==='Alta'?'☀️':p.luz==='Media'?'🌤':'🌧'} ${p.luz}</span>`:''}
+          ${p.riego?`<span class="tag">💧 ${p.riego}</span>`:''}
+        </div>
+        <div class="card-price">${precio}</div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-outline btn-sm detail-btn">Ver detalle</button>
+        <button class="btn btn-ghost btn-sm edit-btn" style="color:var(--texto)">✏️</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachCardEvents() {
+  document.querySelectorAll('.detail-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.target.closest('.plant-card').dataset.id;
+      openDetailModal(id);
+    });
+  });
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = e.target.closest('.plant-card').dataset.id;
+      openFormModal(id);
+    });
+  });
+  document.querySelectorAll('.plant-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (!e.target.classList.contains('btn') && !e.target.closest('.btn')) {
+        openDetailModal(card.dataset.id);
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════
+document.addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  const filter = chip.dataset.filter;
+  const value = chip.dataset.value;
+  activeFilters[filter] = value;
+  document.querySelectorAll(`[data-filter="${filter}"]`).forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  renderCatalog();
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  activeFilters.search = e.target.value;
+  renderCatalog();
+});
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('btnGrid').classList.toggle('active', v==='grid');
+  document.getElementById('btnList').classList.toggle('active', v==='list');
+  renderCatalog();
+}
+
+// ═══════════════════════════════════════════════════
+//  FORM MODAL
+// ═══════════════════════════════════════════════════
+function openFormModal(id=null) {
+  editingId = id;
+  imgBase64 = null;
+  imgFile = null;
+  const f = ['codigo','nombre','descripcion','cientifico','familia','tipo','luz','riego','frecuencia','fertilizacion','poda','precio'];
+  f.forEach(k => document.getElementById('f_'+k).value = '');
+  document.getElementById('imgPreviewContent').innerHTML = `<div style="font-size:2.5rem">📷</div><div class="img-hint">Clic para seleccionar imagen (JPG, PNG, WEBP)</div>`;
+  document.getElementById('deleteBtn').style.display = 'none';
+
+  if (id) {
+    const p = plants.find(x=>x.id===id);
+    if (p) {
+      f.forEach(k => { if(p[k]) document.getElementById('f_'+k).value = p[k]; });
+      if (p.imagen) {
+        imgBase64 = p.imagen;
+        document.getElementById('imgPreviewContent').innerHTML = `<img src="${p.imagen}" style="max-height:140px;border-radius:6px">`;
+      }
+      document.getElementById('deleteBtn').style.display = '';
+    }
+    document.getElementById('formModalTitle').textContent = '✏️ Editar Planta';
+  } else {
+    document.getElementById('formModalTitle').textContent = '🌱 Nueva Planta';
+  }
+  openModal('formModal');
+}
+
+function closeFormModal() { closeModal('formModal'); }
+
+function handleImgSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  imgFile = file; // guardar referencia para subir a Storage
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgBase64 = e.target.result;
+    document.getElementById('imgPreviewContent').innerHTML = `<img src="${imgBase64}" style="max-height:140px;border-radius:6px"><div class="img-hint" style="margin-top:6px">Clic para cambiar imagen</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function savePlant() {
+  const codigo = document.getElementById('f_codigo').value.trim();
+  const nombre = document.getElementById('f_nombre').value.trim();
+  if (!codigo) { toast('El código interno es obligatorio', 'error'); return; }
+  if (!nombre) { toast('El nombre del producto es obligatorio', 'error'); return; }
+
+  const saveBtn = document.querySelector('.form-actions .btn-primary');
+  saveBtn.disabled = true; saveBtn.textContent = '⏳ Guardando…';
+
+  try {
+    // 1. Subir imagen al Storage si hay una nueva
+    let imagen_url = null;
+    const existingPlant = editingId ? plants.find(p=>p.id===editingId) : null;
+    if (imgFile && SB_CONFIGURED) {
+      toast('Subiendo imagen…', 'info');
+      const ext = imgFile.name.split('.').pop();
+      imagen_url = await SB.uploadImage(imgFile, `${codigo}.${ext}`);
+    } else if (existingPlant) {
+      imagen_url = existingPlant.imagen || null;
+    }
+
+    const plantData = {
+      codigo, nombre,
+      descripcion: document.getElementById('f_descripcion').value.trim(),
+      cientifico: document.getElementById('f_cientifico').value.trim(),
+      familia: document.getElementById('f_familia').value.trim(),
+      tipo: document.getElementById('f_tipo').value,
+      luz: document.getElementById('f_luz').value,
+      riego: document.getElementById('f_riego').value,
+      frecuencia: document.getElementById('f_frecuencia').value.trim(),
+      fertilizacion: document.getElementById('f_fertilizacion').value.trim(),
+      poda: document.getElementById('f_poda').value.trim(),
+      precio: document.getElementById('f_precio').value || null,
+      imagen_url,
+      qr_url: buildQrUrl(codigo),
+      updated_at: new Date().toISOString()
+    };
+
+    if (SB_CONFIGURED) {
+      if (editingId) {
+        await SB.update('plantas', { id: editingId }, plantData);
+      } else {
+        await SB.insert('plantas', plantData);
+      }
+      await loadData();
+    } else {
+      // Modo demo sin Supabase
+      const local = { ...plantData, id: editingId || ('demo-'+Date.now()), imagen: imagen_url || imgBase64 };
+      if (editingId) {
+        const idx = plants.findIndex(p=>p.id===editingId);
+        if (idx>=0) plants[idx] = local;
+      } else { plants.unshift(local); }
+    }
+
+    closeFormModal();
+    renderCatalog();
+    toast(editingId ? 'Planta actualizada ✓' : 'Planta agregada ✓', 'success');
+    // Auto-generar y guardar QR en BD
+    const savedPlant = plants.find(p => p.codigo === codigo);
+    if (savedPlant) generateAndSaveQR(savedPlant).then(() => renderCatalog());
+  } catch(e) {
+    toast('Error al guardar: ' + e.message, 'error');
+  } finally {
+    saveBtn.disabled = false; saveBtn.textContent = '💾 Guardar Planta';
+  }
+}
+
+async function deletePlant() {
+  if (!editingId) return;
+  if (!confirm('¿Eliminar esta planta del catálogo? Esta acción no se puede deshacer.')) return;
+  try {
+    if (SB_CONFIGURED) {
+      await SB.delete('plantas', { id: editingId });
+      await loadData();
+    } else {
+      plants = plants.filter(p => p.id !== editingId);
+    }
+    closeFormModal();
+    renderCatalog();
+    toast('Planta eliminada', 'info');
+  } catch(e) {
+    toast('Error al eliminar: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  DETAIL MODAL
+// ═══════════════════════════════════════════════════
+function openDetailModal(id) {
+  currentDetailId = id;
+  const p = plants.find(x=>x.id===id);
+  if (!p) return;
+
+  const tipo = (p.tipo||'').toLowerCase().replace(/á/g,'a').replace(/é/g,'e').replace(/ó/g,'o');
+  const precio = p.precio ? `$${Number(p.precio).toLocaleString('es-CO')}` : 'Consultar';
+  const qrUrl = BASE_URL.replace('index.html','').replace(/\/$/,'') + '/planta.html?codigo=' + encodeURIComponent(p.codigo);
+
+  const specs = [
+    { icon:'🌿', label:'Tipo', value: p.tipo||'—' },
+    { icon:'☀️', label:'Luz', value: p.luz||'—' },
+    { icon:'💧', label:'Riego', value: p.riego||'—' },
+    { icon:'📅', label:'Frecuencia', value: p.frecuencia||'—' },
+    { icon:'🌱', label:'Fertilización', value: p.fertilizacion||'—' },
+    { icon:'✂️', label:'Poda', value: p.poda||'—' },
+    { icon:'🔬', label:'Familia', value: p.familia||'—' },
+  ].filter(s => s.value !== '—');
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-hero">
+      ${p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}">` : `<div class="detail-hero-placeholder">🌿</div>`}
+      <div class="detail-type-stripe card-type-bar ${tipo}"></div>
+    </div>
+    <div class="detail-content">
+      <div class="detail-top">
+        <div class="detail-names">
+          <div class="detail-code">${p.codigo}</div>
+          <div class="detail-name">${p.nombre}</div>
+          ${p.cientifico?`<div class="detail-sci">${p.cientifico}</div>`:''}
+        </div>
+        <div class="detail-price">${precio}</div>
+      </div>
+      ${p.descripcion?`<div class="detail-desc">${p.descripcion}</div>`:''}
+      ${specs.length>0?`<div class="detail-specs">${specs.map(s=>`
+        <div class="spec-item">
+          <div class="spec-icon">${s.icon}</div>
+          <div class="spec-label">${s.label}</div>
+          <div class="spec-value">${s.value}</div>
+        </div>`).join('')}</div>`:''}
+      <div class="qr-section">
+        <div class="qr-box" id="qrContainer_${p.id}"></div>
+        <div class="qr-info">
+          <h4>Código QR de la Planta</h4>
+          <p>Imprime y pega este QR a la planta. Cuando el cliente lo escanee con su celular, verá esta ficha técnica automáticamente.</p>
+          <div class="qr-actions">
+            <button class="btn btn-sm btn-white" onclick="downloadQR('${p.id}','${p.codigo}')">⬇️ Descargar QR</button>
+            <button class="btn btn-sm btn-ghost" onclick="openPrintModal('${p.id}','${p.codigo}')">🖨 Imprimir etiqueta</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  openModal('detailModal');
+
+  // Generate QR after modal opens
+  setTimeout(() => {
+    const container = document.getElementById(`qrContainer_${p.id}`);
+    if (container && !container.querySelector('canvas, img')) {
+      try {
+        new QRCode(container, {
+          text: qrUrl, width: 110, height: 110,
+          colorDark: '#2D5016', colorLight: '#FDFAF4',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) { container.textContent = 'QR no disponible'; }
+    }
+  }, 100);
+}
+
+function closeDetailModal() { closeModal('detailModal'); }
+
+function editFromDetail() {
+  closeDetailModal();
+  setTimeout(() => openFormModal(currentDetailId), 150);
+}
+
+function downloadQR(id, codigo) {
+  const container = document.getElementById(`qrContainer_${id}`);
+  if (!container) return;
+  const img = container.querySelector('img') || container.querySelector('canvas');
+  if (!img) { toast('Generando QR, espera un momento', 'info'); return; }
+  let dataUrl;
+  if (img.tagName === 'CANVAS') {
+    dataUrl = img.toDataURL('image/png');
+  } else {
+    // Create canvas from img
+    const cv = document.createElement('canvas');
+    cv.width = img.naturalWidth || 110; cv.height = img.naturalHeight || 110;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    dataUrl = cv.toDataURL('image/png');
+  }
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = `QR_${codigo}.png`; a.click();
+  toast('QR descargado ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+//  SISTEMA DE IMPRESIÓN QR
+// ═══════════════════════════════════════════════════
+let printPlantId = null;  // id de la planta actualmente en el modal de impresión
+
+function openPrintModal(plantId, codigo) {
+  printPlantId = plantId;
+  const plant = plants.find(p => p.id === plantId);
+  if (!plant) return;
+
+  // Reset opciones
+  document.getElementById('printSize').value = 'md';
+  document.getElementById('printCopies').value = '1';
+  document.getElementById('printShowPrice').value = 'no';
+  document.getElementById('printShowSci').value = 'no';
+
+  // Rellenar datos estáticos del preview
+  document.getElementById('lpCode').textContent = plant.codigo;
+  document.getElementById('lpName').textContent = plant.nombre;
+
+  // Logo en preview
+  const logoSaved = localStorage.getItem(LOGO_KEY);
+  const lpLogo = document.getElementById('lpLogo');
+  if (logoSaved) {
+    lpLogo.innerHTML = '<img src="' + logoSaved + '" style="max-height:28px;max-width:100px;object-fit:contain">';
+  } else {
+    lpLogo.textContent = '🌿';
+  }
+
+  // Generar QR en el preview
+  const lpQrBox = document.getElementById('lpQrBox');
+  lpQrBox.innerHTML = '';
+  try {
+    new QRCode(lpQrBox, {
+      text: buildQrUrl(plant.codigo),
+      width: 100, height: 100,
+      colorDark: '#2D5016', colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {}
+
+  openModal('printModal');
+}
+
+function closePrintModal() { closeModal('printModal'); }
+
+function changeCopies(delta) {
+  const inp = document.getElementById('printCopies');
+  const v = Math.max(1, Math.min(50, parseInt(inp.value || 1) + delta));
+  inp.value = v;
+}
+
+function updateLabelPreview() {
+  // Solo reajusta tamaño visual del preview — el QR ya está generado
+  const size = document.getElementById('printSize').value;
+  const lp = document.getElementById('labelPreview');
+  const qrSizes = { sm: 70, md: 100, lg: 140 };
+  const paddings = { sm: '12px 14px', md: '16px 20px', lg: '20px 26px' };
+  lp.style.padding = paddings[size];
+  // Resize the QR canvas visually
+  const qrImg = document.getElementById('lpQrBox').querySelector('img,canvas');
+  if (qrImg) {
+    qrImg.style.width = qrSizes[size] + 'px';
+    qrImg.style.height = qrSizes[size] + 'px';
+  }
+}
+
+function downloadCurrentQR() {
+  const qrBox = document.getElementById('lpQrBox');
+  const dataUrl = qrContainerToDataUrl(qrBox);
+  if (!dataUrl) { toast('QR no disponible todavía', 'info'); return; }
+  const plant = plants.find(p => p.id === printPlantId);
+  const codigo = plant ? plant.codigo : 'qr';
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = 'QR_' + codigo + '.png'; a.click();
+  toast('QR descargado ✓', 'success');
+}
+
+function doPrint() {
+  if (!printPlantId) return;
+  const plant = plants.find(p => p.id === printPlantId);
+  if (!plant) return;
+
+  const copies   = Math.max(1, parseInt(document.getElementById('printCopies').value) || 1);
+  const size     = document.getElementById('printSize').value;
+  const showPrice= document.getElementById('printShowPrice').value === 'si';
+  const showSci  = document.getElementById('printShowSci').value === 'si';
+  const logoSaved= localStorage.getItem(LOGO_KEY);
+
+  // Get QR image data
+  const qrBox  = document.getElementById('lpQrBox');
+  const qrData = qrContainerToDataUrl(qrBox);
+
+  // Size map (mm → px at 96dpi approx for print)
+  const sizes = {
+    sm: { mm: 50,  qrPx: 90,  nameFz: 10, codeFz: 8  },
+    md: { mm: 70,  qrPx: 130, nameFz: 12, codeFz: 9  },
+    lg: { mm: 100, qrPx: 190, nameFz: 14, codeFz: 10 }
+  };
+  const s = sizes[size];
+
+  // Build one label HTML
+  const logoHtml = logoSaved
+    ? '<img src="' + logoSaved + '" style="max-height:24px;max-width:90px;object-fit:contain;margin-bottom:4px">'
+    : '<span style="font-size:14px">🌿</span>';
+  const priceHtml = (showPrice && plant.precio)
+    ? '<div style="font-size:' + (s.codeFz+1) + 'px;font-weight:700;color:#2D5016;margin:3px 0">$' + Number(plant.precio).toLocaleString('es-CO') + '</div>' : '';
+  const sciHtml = (showSci && plant.cientifico)
+    ? '<div style="font-size:' + (s.codeFz-1) + 'px;color:#6B7B5E;font-style:italic;margin:2px 0">' + plant.cientifico + '</div>' : '';
+
+  const oneLabelHtml = `
+    <div class="label">
+      <div class="lbl-logo">${logoHtml}</div>
+      <div class="lbl-code">${plant.codigo}</div>
+      ${qrData ? '<img src="' + qrData + '" class="lbl-qr">' : ''}
+      <div class="lbl-name">${plant.nombre}</div>
+      ${sciHtml}
+      ${priceHtml}
+      <div class="lbl-vivero">Vivero Multigrupo</div>
+    </div>`;
+
+  // Repeat N copies
+  const labelsHtml = Array(copies).fill(oneLabelHtml).join('\n');
+
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) { toast('El navegador bloqueó la ventana emergente. Permite ventanas emergentes para este sitio.', 'error'); return; }
+
+  printWindow.document.write(`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Etiquetas QR — ${plant.nombre}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    .page-title {
+      font-size: 14px; color: #555; margin-bottom: 16px; text-align: center;
+    }
+    .labels-grid {
+      display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+    }
+    .label {
+      background: white;
+      border: 2px solid #2D5016;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      width: ${s.mm * 1.15}px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .lbl-logo { margin-bottom: 5px; min-height: 24px; display: flex; align-items: center; justify-content: center; }
+    .lbl-code { font-size: ${s.codeFz}px; color: #6B7B5E; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 5px; }
+    .lbl-qr   { width: ${s.qrPx}px; height: ${s.qrPx}px; margin: 4px 0; }
+    .lbl-name { font-size: ${s.nameFz}px; font-weight: 700; color: #1C2B10; line-height: 1.2; margin: 4px 0; max-width: ${s.mm}px; }
+    .lbl-vivero { font-size: ${s.codeFz - 1}px; color: #8FA080; margin-top: 5px; }
+    .no-print-hint {
+      text-align: center; margin-bottom: 16px;
+      font-size: 13px; color: #666;
+    }
+    .btn-print {
+      display: inline-block; padding: 10px 28px;
+      background: #2D5016; color: white; border: none;
+      border-radius: 8px; font-size: 14px; cursor: pointer;
+      margin: 0 6px;
+    }
+    @media print {
+      body { background: white; padding: 8px; }
+      .no-print-hint { display: none; }
+      .labels-grid { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print-hint">
+    <p style="margin-bottom:10px"><strong>${copies} etiqueta(s)</strong> de <strong>${plant.nombre}</strong> — ${plant.codigo}</p>
+    <button class="btn-print" onclick="window.print()">🖨 Imprimir ahora</button>
+    <button class="btn-print" style="background:#6B7B5E" onclick="window.close()">✕ Cerrar</button>
+  </div>
+  <div class="labels-grid">
+    ${labelsHtml}
+  </div>
+  <script>
+    // Auto-print si ya estaba todo listo
+    window.onload = () => {
+      const imgs = document.querySelectorAll('img');
+      let loaded = 0;
+      if (imgs.length === 0) { setTimeout(() => window.print(), 400); return; }
+      imgs.forEach(img => {
+        if (img.complete) { loaded++; if (loaded === imgs.length) setTimeout(() => window.print(), 300); }
+        else img.onload = () => { loaded++; if (loaded === imgs.length) setTimeout(() => window.print(), 300); };
+      });
+    };
+  <\/script>
+</body>
+</html>`);
+  printWindow.document.close();
+}
+
+// ═══════════════════════════════════════════════════
+//  IMPORT EXCEL
+// ═══════════════════════════════════════════════════
+function openImportModal() { openModal('importModal'); }
+function closeImportModal() {
+  closeModal('importModal');
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importLog').style.display = 'none';
+  document.getElementById('excelInput').value = '';
+  currentImportData = [];
+}
+
+const COL_MAP = {
+  codigo:['codigo','code','cod','código','internal code','codigo interno'],
+  nombre:['nombre','name','producto','product','articulo','artículo'],
+  descripcion:['descripcion','descripción','description','desc'],
+  cientifico:['cientifico','científico','nombre cientifico','scientific name','especie'],
+  familia:['familia','family','familia botanica','familia botánica'],
+  tipo:['tipo','type','tipo de planta','plant type'],
+  luz:['luz','light','requerimiento de luz','req luz'],
+  riego:['riego','watering','tipo de riego'],
+  frecuencia:['frecuencia','frequency','frecuencia de riego','watering frequency'],
+  fertilizacion:['fertilizacion','fertilización','fertilization','abono'],
+  poda:['poda','pruning','poda recomendada'],
+  precio:['precio','price','valor','cost','precio venta','precio de venta']
+};
+
+function mapColumns(headers) {
+  const map = {};
+  headers.forEach((h,i) => {
+    const hLow = (h||'').toString().toLowerCase().trim();
+    for (const [field, aliases] of Object.entries(COL_MAP)) {
+      if (aliases.some(a => hLow.includes(a) || a.includes(hLow))) {
+        if (!map[field]) map[field] = i;
+      }
+    }
+  });
+  return map;
+}
+
+function handleExcelFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      if (raw.length < 2) { toast('El archivo no tiene datos suficientes', 'error'); return; }
+
+      const headers = raw[0].map(h => (h||'').toString());
+      const colMap = mapColumns(headers);
+
+      currentImportData = raw.slice(1).filter(row => row.some(c=>c!==undefined && c!=='')).map(row => {
+        const obj = {};
+        for (const [field, idx] of Object.entries(colMap)) {
+          obj[field] = row[idx] !== undefined ? row[idx].toString().trim() : '';
+        }
+        return obj;
+      });
+
+      // Preview table
+      const previewRows = currentImportData.slice(0, 5);
+      const fields = Object.keys(COL_MAP);
+      const tableHTML = `<thead><tr>${fields.map(f=>`<th>${f}</th>`).join('')}</tr></thead><tbody>${
+        previewRows.map(r=>`<tr>${fields.map(f=>`<td>${r[f]||''}</td>`).join('')}</tr>`).join('')
+      }</tbody>`;
+      document.getElementById('previewTable').innerHTML = tableHTML;
+      document.getElementById('importPreview').style.display = '';
+      document.getElementById('importLog').style.display = 'none';
+      toast(`${currentImportData.length} filas detectadas`, 'info');
+    } catch(err) {
+      toast('Error al leer el archivo: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function cancelImport() {
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('excelInput').value = '';
+  currentImportData = [];
+}
+
+async function confirmImport() {
+  const log = document.getElementById('importLog');
+  log.style.display = ''; log.innerHTML = '';
+  const btn = document.getElementById('confirmImportBtn');
+  btn.disabled = true; btn.textContent = '⏳ Importando…';
+
+  let added=0, updated=0, skipped=0;
+  const toUpsert = [];
+
+  currentImportData.forEach((row, i) => {
+    const codigo = (row.codigo||'').trim();
+    const nombre = (row.nombre||'').trim();
+    if (!codigo || !nombre) {
+      log.innerHTML += `<p class="err">Fila ${i+2}: Sin código o nombre — omitida</p>`;
+      skipped++; return;
+    }
+    const existing = plants.find(p => p.codigo === codigo);
+    toUpsert.push({
+      ...(existing ? { id: existing.id } : {}),
+      codigo, nombre,
+      descripcion: row.descripcion||'',
+      cientifico: row.cientifico||'',
+      familia: row.familia||'',
+      tipo: row.tipo||'',
+      luz: row.luz||'',
+      riego: row.riego||'',
+      frecuencia: row.frecuencia||'',
+      fertilizacion: row.fertilizacion||'',
+      poda: row.poda||'',
+      precio: row.precio ? Number(row.precio) : null,
+      qr_url: buildQrUrl(codigo),
+      updated_at: new Date().toISOString()
+    });
+    if (existing) updated++; else added++;
+    log.innerHTML += `<p class="ok">Fila ${i+2}: ${codigo} — ${existing?'actualizada':'nueva'}</p>`;
+  });
+
+  try {
+    if (SB_CONFIGURED && toUpsert.length > 0) {
+      await SB.upsert('plantas', toUpsert);
+      await loadData();
+    } else {
+      // modo demo
+      toUpsert.forEach(row => {
+        const idx = plants.findIndex(p=>p.codigo===row.codigo);
+        const local = { ...row, id: row.id||('demo-'+Date.now()+Math.random()), imagen: null };
+        if (idx>=0) plants[idx]=local; else plants.unshift(local);
+      });
+    }
+    log.innerHTML += `<p style="color:#F0AD4E;margin-top:6px">✓ Completado: ${added} nuevas, ${updated} actualizadas, ${skipped} omitidas</p>`;
+    renderCatalog();
+    toast(`Importación: ${added} nuevas, ${updated} actualizadas`, 'success');
+    // Auto-generar QRs faltantes en segundo plano
+    const sinQr = plants.filter(p => !p.qr_url);
+    if (sinQr.length) {
+      toast(`Generando ${sinQr.length} QR(s) en segundo plano…`, 'info');
+      (async () => {
+        for (const plant of sinQr) await generateAndSaveQR(plant);
+        toast('QRs generados y registrados en BD ✓', 'success');
+        renderCatalog();
+      })();
+    }
+  } catch(e) {
+    log.innerHTML += `<p class="err">Error: ${e.message}</p>`;
+    toast('Error en importación', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '✅ Importar datos';
+    btn.style.display = 'none';
+  }
+}
+
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new();
+  const headers = ['codigo','nombre','descripcion','cientifico','familia','tipo','luz','riego','frecuencia','fertilizacion','poda','precio'];
+  const example = ['P-001','Anturio Rojo','Planta ornamental de interior con flores vibrantes','Anthurium andraeanum','Araceae','Herbácea','Media','Moderado','2 veces por semana','Mensual con abono foliar','Eliminar flores secas','25000'];
+  const ws = XLSX.utils.aoa_to_sheet([headers, example]);
+  XLSX.utils.book_append_sheet(wb, ws, 'Catalogo');
+  XLSX.writeFile(wb, 'plantilla_catalogo_vivero.xlsx');
+  toast('Plantilla descargada ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════
+function exportData() {
+  if (plants.length===0) { toast('No hay plantas para exportar', 'info'); return; }
+  const fields = ['codigo','nombre','cientifico','familia','tipo','luz','riego','frecuencia','fertilizacion','poda','precio','descripcion'];
+  const rows = plants.map(p => fields.map(f => p[f]||''));
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([fields, ...rows]);
+  XLSX.utils.book_append_sheet(wb, ws, 'Catalogo');
+  XLSX.writeFile(wb, `catalogo_vivero_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Exportado exitosamente ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════════
+//  DEEP LINK: ?planta=CODIGO
+// ═══════════════════════════════════════════════════
+function checkDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const cod = params.get('planta');
+  if (!cod) return;
+  const p = plants.find(x => x.codigo === cod);
+  if (p) setTimeout(() => openDetailModal(p.id), 300);
+  else if (plants.length > 0) toast(`Planta "${cod}" no encontrada en el catálogo`, 'info');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+  backdrop.addEventListener('click', e => {
+    if (e.target === backdrop) backdrop.classList.remove('open');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+});
+
+// Drag & drop import zone
+const importZone = document.getElementById('importZone');
+['dragover','dragenter'].forEach(ev => importZone.addEventListener(ev, e => { e.preventDefault(); importZone.classList.add('drag-over'); }));
+['dragleave','drop'].forEach(ev => importZone.addEventListener(ev, e => { importZone.classList.remove('drag-over'); }));
+importZone.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const fakeInput = { files: [file] };
+  handleExcelFile(fakeInput);
+});
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  el.innerHTML = `<span>${icons[type]||''}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.classList.add('show'), 10);
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3500);
+}
+
+
+// ═══════════════════════════════════════════════════
+//  LOGO MANAGEMENT
+// ═══════════════════════════════════════════════════
+const LOGO_KEY      = 'vivero_logo_v1';       // caché local
+const LOGO_SB_PATH  = 'logo/logo-empresa';    // ruta fija en Supabase Storage
+
+// ── Carga el logo: primero intenta desde Supabase, luego desde caché local ──
+async function loadLogo() {
+  // 1. Mostrar caché local de inmediato (sin esperar red)
+  const cached = localStorage.getItem(LOGO_KEY);
+  if (cached) applyLogo(cached);
+
+  // 2. Si Supabase está configurado, verificar si hay logo centralizado
+  if (!SB_CONFIGURED) return;
+  try {
+    // Supabase Storage devuelve 200 si el archivo existe (es público)
+    const logoUrl = SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/' + LOGO_SB_PATH;
+    // Añadir timestamp para evitar caché del navegador al verificar
+    const check = await fetch(logoUrl + '?t=' + Date.now(), { method: 'HEAD' });
+    if (check.ok) {
+      // Archivo existe — descargar como blob y guardar en caché local
+      const res = await fetch(logoUrl + '?t=' + Date.now());
+      const blob = await res.blob();
+      const reader = new FileReader();
+      reader.onload = e => {
+        localStorage.setItem(LOGO_KEY, e.target.result);
+        applyLogo(e.target.result);
+      };
+      reader.readAsDataURL(blob);
+    }
+  } catch(e) {
+    // Sin conexión — el caché local ya se aplicó arriba, no hacer nada
+  }
+}
+
+function applyLogo(dataUrl) {
+  const wrap = document.getElementById('logoIconWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<img src="' + dataUrl + '" alt="Logo Vivero Multigrupo">';
+  const prev = document.getElementById('logoCurrentPreview');
+  if (prev) prev.src = dataUrl;
+  const cw = document.getElementById('logoCurrentWrap');
+  if (cw) cw.style.display = '';
+  const rb = document.getElementById('removeLogoBtn');
+  if (rb) rb.style.display = '';
+}
+
+async function handleLogoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Imagen mayor a 2MB — usa una más pequeña', 'error'); return; }
+
+  const saveBtn = document.getElementById('logoSaveStatus');
+  if (saveBtn) { saveBtn.textContent = '⏳ Subiendo…'; saveBtn.style.display = ''; }
+
+  // Guardar en caché local siempre (funciona aunque falle Supabase)
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    localStorage.setItem(LOGO_KEY, dataUrl);
+    applyLogo(dataUrl);
+    refreshUploadZone(dataUrl);
+
+    // Subir a Supabase Storage si está configurado
+    if (SB_CONFIGURED) {
+      try {
+        await SB.uploadImage(file, LOGO_SB_PATH);
+        toast('Logo guardado y centralizado en Supabase ✓', 'success');
+      } catch(err) {
+        toast('Logo guardado localmente. Error en Supabase: ' + err.message, 'error');
+      }
+    } else {
+      toast('Logo guardado localmente (Supabase no configurado)', 'info');
+    }
+    if (saveBtn) saveBtn.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function refreshUploadZone(dataUrl) {
+  const zone = document.getElementById('logoUploadZone');
+  if (!zone) return;
+  zone.innerHTML = '<input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">'
+    + (dataUrl
+      ? '<img src="' + dataUrl + '" style="max-height:80px;border-radius:8px;margin-bottom:8px"><p style="font-size:.8rem;color:var(--musgo)">Clic para cambiar logo</p>'
+      : '<div style="font-size:2.5rem;margin-bottom:8px">🖼️</div><p style="font-weight:600;color:var(--texto);margin-bottom:4px">Clic para seleccionar tu logo</p><p style="font-size:.8rem;color:var(--musgo)">PNG, JPG o SVG · Recomendado: fondo transparente</p>');
+  zone.onclick = () => document.getElementById('logoFileInput').click();
+}
+
+async function removeLogo() {
+  if (!confirm('¿Quitar el logo y volver al ícono por defecto?')) return;
+  localStorage.removeItem(LOGO_KEY);
+  const wrap = document.getElementById('logoIconWrap');
+  if (wrap) wrap.innerHTML = '🌿';
+  const cw = document.getElementById('logoCurrentWrap');
+  if (cw) cw.style.display = 'none';
+  const rb = document.getElementById('removeLogoBtn');
+  if (rb) rb.style.display = 'none';
+  refreshUploadZone(null);
+
+  // Eliminar de Supabase Storage si está configurado
+  if (SB_CONFIGURED) {
+    try {
+      const h = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+      await fetch(SUPABASE_URL + '/storage/v1/object/' + BUCKET_NAME + '/' + LOGO_SB_PATH, { method: 'DELETE', headers: h });
+      toast('Logo eliminado de todos los dispositivos', 'info');
+    } catch(e) {
+      toast('Logo eliminado localmente', 'info');
+    }
+  } else {
+    toast('Logo eliminado', 'info');
+  }
+}
+
+function openSettingsModal() {
+  const saved = localStorage.getItem(LOGO_KEY);
+  if (saved) {
+    const prev = document.getElementById('logoCurrentPreview');
+    if (prev) prev.src = saved;
+    const cw = document.getElementById('logoCurrentWrap');
+    if (cw) cw.style.display = '';
+    const rb = document.getElementById('removeLogoBtn');
+    if (rb) rb.style.display = '';
+    refreshUploadZone(saved);
+  } else {
+    refreshUploadZone(null);
+  }
+  openModal('settingsModal');
+}
+
+function closeSettingsModal() { closeModal('settingsModal'); }
+
+
+
+// ═══════════════════════════════════════════════════
+//  QR HELPERS
+// ═══════════════════════════════════════════════════
+function buildQrUrl(codigo) {
+  const base = window.location.href
+    .replace('index.html', '')
+    .replace(/\?.*$/, '')
+    .replace(/\/$/, '');
+  return base + '/planta.html?codigo=' + encodeURIComponent(codigo);
+}
+
+// Convierte un QR en canvas/img a PNG base64
+function qrContainerToDataUrl(container) {
+  const canvas = container.querySelector('canvas');
+  if (canvas) return canvas.toDataURL('image/png');
+  const img = container.querySelector('img');
+  if (img) {
+    const cv = document.createElement('canvas');
+    cv.width = img.naturalWidth || 120; cv.height = img.naturalHeight || 120;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    return cv.toDataURL('image/png');
+  }
+  return null;
+}
+
+// Genera QR como PNG y lo sube a Supabase Storage, devuelve URL pública
+async function uploadQrToStorage(codigo, dataUrl) {
+  if (!SB_CONFIGURED || !dataUrl) return dataUrl;
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], `qr_${codigo}.png`, { type: 'image/png' });
+    return await SB.uploadImage(file, `qr/qr_${codigo}.png`);
+  } catch(e) {
+    return dataUrl; // fallback: devolver el dataUrl si falla el upload
+  }
+}
+
+// Genera QR para una planta, lo guarda en storage y actualiza BD
+async function generateAndSaveQR(plant) {
+  return new Promise(resolve => {
+    const tmpDiv = document.createElement('div');
+    tmpDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px';
+    document.body.appendChild(tmpDiv);
+    try {
+      const qrUrl = buildQrUrl(plant.codigo);
+      new QRCode(tmpDiv, {
+        text: qrUrl, width: 200, height: 200,
+        colorDark: '#2D5016', colorLight: '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(async () => {
+        const dataUrl = qrContainerToDataUrl(tmpDiv);
+        document.body.removeChild(tmpDiv);
+        if (!dataUrl) { resolve(null); return; }
+        // Subir imagen QR a storage si Supabase está configurado
+        const finalUrl = await uploadQrToStorage(plant.codigo, dataUrl);
+        // Guardar qr_url en la BD
+        if (SB_CONFIGURED) {
+          try {
+            await SB.update('plantas', { id: plant.id }, {
+              qr_url: qrUrl,
+              updated_at: new Date().toISOString()
+            });
+          } catch(e) { console.warn('QR DB update failed:', e); }
+        }
+        // Actualizar objeto local
+        const idx = plants.findIndex(p => p.id === plant.id);
+        if (idx >= 0) plants[idx].qr_url = qrUrl;
+        resolve({ qrUrl, imgDataUrl: dataUrl });
+      }, 300);
+    } catch(e) {
+      if (document.body.contains(tmpDiv)) document.body.removeChild(tmpDiv);
+      resolve(null);
+    }
+  });
+}
+
+// ── PESTAÑA QR ──
+function switchTab(tab) {
+  // IDs explícitos para evitar problemas de capitalización
+  const paneMap = { catalogo: 'paneCatalogo', qr: 'paneQR' };
+  const tabMap  = { catalogo: 'tabCatalogo',  qr: 'tabQR'  };
+  Object.keys(paneMap).forEach(t => {
+    document.getElementById(paneMap[t]).classList.toggle('active', t === tab);
+    document.getElementById(tabMap[t]).classList.toggle('active', t === tab);
+  });
+  if (tab === 'qr') renderQRTab();
+}
+
+const QR_PAGE_SIZE = 30; // plantas por página en la pestaña QR
+let qrPageCurrent  = 1;
+let qrFilterMissing = false; // mostrar solo las que no tienen QR
+
+function renderQRTab(page) {
+  if (page !== undefined) qrPageCurrent = page;
+  const grid = document.getElementById('qrGrid');
+  if (!plants.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📱</div><h3>No hay plantas aún</h3><p>Agrega plantas en la pestaña Catálogo primero.</p></div>';
+    return;
+  }
+
+  // Filtrar si solo-faltantes está activo
+  const source = qrFilterMissing ? plants.filter(p => !p.qr_url) : plants;
+  const totalPages = Math.ceil(source.length / QR_PAGE_SIZE);
+  qrPageCurrent = Math.min(Math.max(1, qrPageCurrent), totalPages || 1);
+  const start = (qrPageCurrent - 1) * QR_PAGE_SIZE;
+  const page_plants = source.slice(start, start + QR_PAGE_SIZE);
+
+  const sinQR = plants.filter(p => !p.qr_url).length;
+
+  // Barra de info + paginación
+  const paginationHtml = totalPages > 1 ? `
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" style="color:var(--texto)" ${qrPageCurrent===1?'disabled':''} onclick="renderQRTab(${qrPageCurrent-1})">← Anterior</button>
+      <span style="font-size:.83rem;color:var(--musgo)">Página <strong>${qrPageCurrent}</strong> de <strong>${totalPages}</strong></span>
+      <button class="btn btn-ghost btn-sm" style="color:var(--texto)" ${qrPageCurrent===totalPages?'disabled':''} onclick="renderQRTab(${qrPageCurrent+1})">Siguiente →</button>
+    </div>` : '';
+
+  const filterBtnLabel = qrFilterMissing ? '👁 Ver todas' : `⚠ Ver solo faltantes (${sinQR})`;
+
+  document.getElementById('qrTabInfo').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:.85rem;color:var(--texto-suave)">
+        <strong style="color:var(--texto)">${source.length}</strong> plantas · 
+        <span style="color:${sinQR>0?'#856404':'#155724'};font-weight:600">${sinQR>0?sinQR+' sin QR':'Todos con QR ✓'}</span>
+      </span>
+      ${sinQR > 0 ? `<button class="btn btn-ghost btn-sm" style="color:var(--texto)" onclick="qrFilterMissing=!qrFilterMissing;qrPageCurrent=1;renderQRTab()">${filterBtnLabel}</button>` : ''}
+      ${paginationHtml}
+    </div>`;
+
+  // Render cards
+  grid.innerHTML = page_plants.map(p => {
+    const hasQr = !!p.qr_url;
+    const badge = hasQr
+      ? '<span class="qr-status-badge saved">✓ En BD</span>'
+      : '<span class="qr-status-badge pending">⚠ Sin QR</span>';
+    return `
+    <div class="qr-item-card" id="qrcard_${p.id}">
+      ${badge}
+      <div class="qr-render" id="qrrender_${p.id}"></div>
+      <div class="qr-item-name">${p.nombre}</div>
+      <div class="qr-item-code">${p.codigo}</div>
+      <div class="qr-item-actions">
+        <button class="btn btn-outline btn-sm" onclick="downloadQRFromTab('${p.id}','${p.codigo}')">⬇️</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--texto)" onclick="openPrintModal('${p.id}','${p.codigo}')">🖨</button>
+        <button class="btn btn-primary btn-sm" onclick="regenerateOneQR('${p.id}')">↺ QR</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Render QR images con pequeño delay para no bloquear UI
+  setTimeout(() => {
+    page_plants.forEach(p => {
+      const container = document.getElementById('qrrender_' + p.id);
+      if (!container || container.querySelector('canvas,img')) return;
+      try {
+        new QRCode(container, {
+          text: buildQrUrl(p.codigo), width: 100, height: 100,
+          colorDark: '#2D5016', colorLight: '#FDFAF4',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {}
+    });
+  }, 50);
+}
+
+async function regenerateOneQR(id) {
+  const plant = plants.find(p => p.id === id);
+  if (!plant) return;
+  const card = document.getElementById('qrcard_' + id);
+  if (card) card.style.opacity = '.5';
+  const result = await generateAndSaveQR(plant);
+  if (card) card.style.opacity = '1';
+  if (result) {
+    toast('QR guardado en BD para ' + plant.codigo + ' ✓', 'success');
+    renderQRTab();
+  } else {
+    toast('Error al generar QR', 'error');
+  }
+}
+
+async function generateAllQRs() {
+  const pending = plants.filter(p => !p.qr_url);
+  if (!pending.length) { toast('Todas las plantas ya tienen QR registrado ✓', 'success'); return; }
+  toast('Generando ' + pending.length + ' QR(s)…', 'info');
+  let ok = 0;
+  for (const plant of pending) {
+    const result = await generateAndSaveQR(plant);
+    if (result) ok++;
+  }
+  toast(ok + ' QR(s) generados y guardados en BD ✓', 'success');
+  renderQRTab();
+}
+
+function downloadQRFromTab(id, codigo) {
+  const container = document.getElementById('qrrender_' + id);
+  if (!container) return;
+  const dataUrl = qrContainerToDataUrl(container);
+  if (!dataUrl) { toast('Espera a que el QR cargue', 'info'); return; }
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = 'QR_' + codigo + '.png'; a.click();
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTENTICACIÓN ADMIN
+//  Cambia ADMIN_USER y ADMIN_PASS por tus credenciales
+// ═══════════════════════════════════════════════════
+const ADMIN_USER = 'admin';          // ← cambia esto
+const ADMIN_PASS = 'vivero2024';     // ← cambia esto (mín. 8 caracteres)
+const AUTH_KEY   = 'vivero_auth_v1';
+
+function isLoggedIn() {
+  return sessionStorage.getItem(AUTH_KEY) === btoa(ADMIN_USER + ':' + ADMIN_PASS);
+}
+
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    sessionStorage.setItem(AUTH_KEY, btoa(u + ':' + p));
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = '';
+    err.style.display = 'none';
+  } else {
+    err.style.display = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function doLogout() {
+  if (!confirm('¿Cerrar sesión del panel de administración?')) return;
+  sessionStorage.removeItem(AUTH_KEY);
+  document.getElementById('loginOverlay').style.display = 'flex';
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+function initAuth() {
+  if (isLoggedIn()) {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = '';
+  }
+  // Show logo on login screen too
+  const cached = localStorage.getItem(LOGO_KEY);
+  if (cached) {
+    const lw = document.getElementById('loginLogoWrap');
+    if (lw) lw.innerHTML = '<img src="' + cached + '" style="max-height:60px;max-width:160px;object-fit:contain">';
+  }
+  // Allow Enter key on user field
+  document.getElementById('loginUser').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+async function init() {
+  await loadLogo();
+  initAuth();
+  await loadData();
+  renderCatalog();
+}
+
+init();
+</script>
+</body>
+</html>
