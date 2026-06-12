@@ -1,0 +1,392 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#2D5016">
+<title>Ficha de Planta — Vivero Multigrupo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #2D5016; --verde-claro: #4A7A28;
+    --crema: #F8F4E8; --crema-oscura: #EDE8D5;
+    --terracota: #C4845A; --blanco: #FDFAF4;
+    --musgo: #6B7B5E; --texto: #1C2B10; --texto-suave: #4A5A3A;
+    --borde: #D5CEB8; --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--crema);
+    color: var(--texto);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER CLIENTE ── */
+  .client-header {
+    background: var(--verde);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .client-logo-wrap {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0; overflow: hidden;
+  }
+  .client-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .client-header-text { color: white; }
+  .client-header-text strong { display: block; font-size: .95rem; font-weight: 600; }
+  .client-header-text span { font-size: .72rem; opacity: .7; letter-spacing: .06em; text-transform: uppercase; }
+
+  /* ── HERO IMAGE ── */
+  .plant-hero {
+    width: 100%; height: 280px;
+    background: var(--crema-oscura);
+    overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .plant-hero img { width: 100%; height: 100%; object-fit: cover; }
+  .plant-hero-placeholder { font-size: 6rem; opacity: .2; }
+  .type-stripe {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 5px;
+  }
+  .type-stripe.arbol     { background: #2D5016; }
+  .type-stripe.arbusto   { background: #4A7A28; }
+  .type-stripe.herbacea,
+  .type-stripe.herbácea  { background: #7BAE3E; }
+  .type-stripe.suculenta { background: #C4845A; }
+  .type-stripe.trepadora { background: #6B7B5E; }
+  .type-stripe.palma     { background: #A0522D; }
+  .type-stripe.cactus    { background: #8B6914; }
+  .type-stripe.acuatica,
+  .type-stripe.acuática  { background: #2980B9; }
+
+  /* ── MAIN CONTENT ── */
+  .plant-content { padding: 24px 20px 40px; max-width: 600px; margin: 0 auto; }
+
+  .plant-code {
+    font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--musgo); margin-bottom: 6px;
+  }
+  .plant-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700; line-height: 1.2;
+    color: var(--texto); margin-bottom: 4px;
+  }
+  .plant-sci {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; color: var(--musgo); font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  .plant-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 700; color: var(--verde);
+    margin-bottom: 20px;
+  }
+  .plant-price span { font-size: 1rem; font-weight: 400; color: var(--musgo); margin-left: 4px; }
+
+  .plant-desc {
+    background: white; border-radius: 12px; padding: 16px 18px;
+    color: var(--texto-suave); font-size: .92rem; line-height: 1.7;
+    margin-bottom: 24px; border: 1px solid var(--borde);
+  }
+
+  /* ── SPECS GRID ── */
+  .section-label {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--musgo); margin-bottom: 12px;
+  }
+  .specs-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 28px;
+  }
+  .spec-card {
+    background: white; border: 1px solid var(--borde);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .spec-icon { font-size: 1.4rem; margin-bottom: 4px; }
+  .spec-label {
+    font-size: .65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--musgo); margin-bottom: 3px;
+  }
+  .spec-value { font-size: .88rem; font-weight: 500; color: var(--texto); }
+
+  /* ── TAGS ── */
+  .plant-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .ptag {
+    padding: 6px 14px; border-radius: 20px; font-size: .8rem;
+    border: 1.5px solid var(--borde); color: var(--musgo); background: white;
+    font-weight: 500;
+  }
+  .ptag.verde  { background: #D4EDDA; border-color: #28A745; color: #155724; }
+  .ptag.sol    { background: #FFF3CD; border-color: #F0AD4E; color: #856404; }
+  .ptag.agua   { background: #D1ECF1; border-color: #17A2B8; color: #0C5460; }
+  .ptag.tipo   { background: var(--crema); border-color: var(--verde-claro); color: var(--verde); }
+
+  /* ── CARE BOX ── */
+  .care-box {
+    background: linear-gradient(135deg, var(--verde) 0%, var(--verde-claro) 100%);
+    border-radius: var(--radius); padding: 20px;
+    margin-bottom: 28px; color: white;
+  }
+  .care-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; margin-bottom: 14px;
+  }
+  .care-item {
+    display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start;
+  }
+  .care-item:last-child { margin-bottom: 0; }
+  .care-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .care-detail strong { display: block; font-size: .78rem; opacity: .75; font-weight: 500; }
+  .care-detail span { font-size: .9rem; }
+
+  /* ── FOOTER ── */
+  .client-footer {
+    text-align: center; padding: 20px;
+    border-top: 1px solid var(--borde);
+    color: var(--musgo); font-size: .8rem;
+    margin-top: 20px;
+  }
+  .client-footer strong { color: var(--verde); }
+
+  /* ── LOADING / ERROR ── */
+  .state-screen {
+    min-height: 60vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 40px 24px;
+  }
+  .state-icon { font-size: 4rem; margin-bottom: 16px; opacity: .4; }
+  .state-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; color: var(--texto-suave); margin-bottom: 8px;
+  }
+  .state-sub { font-size: .85rem; color: var(--musgo); line-height: 1.6; }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--borde);
+    border-top-color: var(--verde); border-radius: 50%;
+    animation: spin .8s linear infinite; margin-bottom: 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (min-width: 480px) {
+    .plant-name { font-size: 2.4rem; }
+    .specs-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="client-header">
+  <div class="client-logo-wrap" id="clientLogoWrap">🌿</div>
+  <div class="client-header-text">
+    <strong>Vivero Multigrupo</strong>
+    <span>Catálogo de Plantas</span>
+  </div>
+</div>
+
+<!-- CONTENIDO DINÁMICO -->
+<div id="appContent">
+  <div class="state-screen">
+    <div class="spinner"></div>
+    <div class="state-title">Cargando información…</div>
+    <div class="state-sub">Estamos buscando la ficha de esta planta.</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  ⚙️  CONFIGURACIÓN — igual que en index.html
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://tppgokbroksdzcwkyjok.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwcGdva2Jyb2tzZHpjd2t5am9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDcwNzcsImV4cCI6MjA5NjYyMzA3N30.SG5AFx9q-ZbmcAfXSOiQxCofD08JUVgfGSSDlR6AB54';
+const BUCKET_NAME  = 'imagenes-plantas';
+const LOGO_KEY     = 'vivero_logo_v1';
+
+const SB_CONFIGURED = SUPABASE_URL !== 'https://TU_PROJECT_URL.supabase.co';
+
+// ── Leer logo del caché o desde Supabase ──
+async function loadLogo() {
+  const cached = localStorage.getItem(LOGO_KEY);
+  if (cached) applyLogo(cached);
+  if (!SB_CONFIGURED) return;
+  try {
+    const url = SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_NAME + '/logo/logo-empresa';
+    const res = await fetch(url + '?t=' + Date.now());
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const reader = new FileReader();
+    reader.onload = e => { localStorage.setItem(LOGO_KEY, e.target.result); applyLogo(e.target.result); };
+    reader.readAsDataURL(blob);
+  } catch(e) {}
+}
+
+function applyLogo(dataUrl) {
+  const w = document.getElementById('clientLogoWrap');
+  if (w) w.innerHTML = '<img src="' + dataUrl + '" alt="Logo">';
+}
+
+// ── Obtener código de la URL ──
+function getCodigoFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  return p.get('codigo') || p.get('planta') || '';
+}
+
+// ── Buscar planta en Supabase ──
+async function fetchPlanta(codigo) {
+  if (!SB_CONFIGURED) return null;
+  const url = SUPABASE_URL + '/rest/v1/plantas?codigo=eq.' + encodeURIComponent(codigo) + '&limit=1';
+  const res = await fetch(url, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data[0] || null;
+}
+
+// ── Formatear precio ──
+function fmtPrecio(v) {
+  if (!v) return null;
+  return '$' + Number(v).toLocaleString('es-CO');
+}
+
+// ── Clase CSS para la banda de tipo ──
+function tipoClass(tipo) {
+  return (tipo||'').toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/ó/g,'o').replace(/\s+/g,'-');
+}
+
+// ── Renderizar ficha de planta ──
+function renderPlanta(p) {
+  const precio = fmtPrecio(p.precio);
+  const tc = tipoClass(p.tipo);
+  const img = p.imagen_url
+    ? `<img src="${p.imagen_url}" alt="${p.nombre}" loading="eager">`
+    : `<div class="plant-hero-placeholder">🌿</div>`;
+
+  // Specs de cuidado
+  const specs = [
+    p.tipo         && { icon:'🌿', label:'Tipo',         value: p.tipo },
+    p.luz          && { icon:'☀️', label:'Luz',          value: p.luz },
+    p.riego        && { icon:'💧', label:'Riego',        value: p.riego },
+    p.frecuencia   && { icon:'📅', label:'Frecuencia',   value: p.frecuencia },
+    p.fertilizacion&& { icon:'🌱', label:'Fertilización',value: p.fertilizacion },
+    p.poda         && { icon:'✂️', label:'Poda',         value: p.poda },
+  ].filter(Boolean);
+
+  const specCards = specs.map(s => `
+    <div class="spec-card">
+      <div class="spec-icon">${s.icon}</div>
+      <div class="spec-label">${s.label}</div>
+      <div class="spec-value">${s.value}</div>
+    </div>`).join('');
+
+  // Tags
+  const tags = [
+    p.tipo    && `<span class="ptag tipo">${p.tipo}</span>`,
+    p.familia && `<span class="ptag">${p.familia}</span>`,
+    p.luz === 'Alta'  && `<span class="ptag sol">☀️ Pleno sol</span>`,
+    p.luz === 'Media' && `<span class="ptag verde">🌤 Sol parcial</span>`,
+    p.luz === 'Sombra'&& `<span class="ptag agua">🌧 Sombra</span>`,
+    p.riego === 'Abundante' && `<span class="ptag agua">💧💧 Riego abundante</span>`,
+    p.riego === 'Moderado'  && `<span class="ptag verde">💧 Riego moderado</span>`,
+    p.riego === 'Escaso'    && `<span class="ptag sol">🏜 Riego escaso</span>`,
+  ].filter(Boolean).join('');
+
+  document.getElementById('appContent').innerHTML = `
+    <div class="plant-hero">
+      ${img}
+      <div class="type-stripe ${tc}"></div>
+    </div>
+    <div class="plant-content">
+      <div class="plant-code">${p.codigo}</div>
+      <div class="plant-name">${p.nombre}</div>
+      ${p.cientifico ? `<div class="plant-sci">${p.cientifico}</div>` : ''}
+      ${precio ? `<div class="plant-price">${precio}<span>precio unitario</span></div>` : ''}
+
+      ${tags ? `<div class="plant-tags">${tags}</div>` : ''}
+
+      ${p.descripcion ? `<div class="plant-desc">${p.descripcion}</div>` : ''}
+
+      ${specCards ? `
+        <div class="section-label">Información de Cuidado</div>
+        <div class="specs-grid">${specCards}</div>` : ''}
+
+      ${(p.riego || p.frecuencia || p.fertilizacion || p.poda) ? `
+        <div class="care-box">
+          <h3>🌱 Guía de cuidado rápida</h3>
+          ${p.riego       ? `<div class="care-item"><div class="care-icon">💧</div><div class="care-detail"><strong>Riego</strong><span>${p.riego}${p.frecuencia ? ' · ' + p.frecuencia : ''}</span></div></div>` : ''}
+          ${p.fertilizacion?`<div class="care-item"><div class="care-icon">🌱</div><div class="care-detail"><strong>Fertilización</strong><span>${p.fertilizacion}</span></div></div>` : ''}
+          ${p.poda        ? `<div class="care-item"><div class="care-icon">✂️</div><div class="care-detail"><strong>Poda</strong><span>${p.poda}</span></div></div>` : ''}
+          ${p.luz         ? `<div class="care-item"><div class="care-icon">☀️</div><div class="care-detail"><strong>Luz necesaria</strong><span>${p.luz}</span></div></div>` : ''}
+        </div>` : ''}
+
+      <div class="client-footer">
+        <strong>Vivero Multigrupo</strong><br>
+        Gracias por tu interés en esta planta 🌿
+      </div>
+    </div>`;
+
+  // Actualizar título de la pestaña
+  document.title = p.nombre + ' — Vivero Multigrupo';
+}
+
+// ── Mostrar error ──
+function renderError(codigo) {
+  document.getElementById('appContent').innerHTML = `
+    <div class="state-screen">
+      <div class="state-icon">🔍</div>
+      <div class="state-title">Planta no encontrada</div>
+      <div class="state-sub">No encontramos una planta con el código <strong>${codigo || '(vacío)'}</strong>.<br>
+      Verifica que el QR esté en buen estado o consulta a un asesor del vivero.</div>
+    </div>`;
+}
+
+function renderNoCode() {
+  document.getElementById('appContent').innerHTML = `
+    <div class="state-screen">
+      <div class="state-icon">📷</div>
+      <div class="state-title">Escanea el QR de una planta</div>
+      <div class="state-sub">Esta página muestra la ficha técnica de cada planta.<br>
+      Apunta la cámara de tu celular al código QR que está en la etiqueta.</div>
+    </div>`;
+}
+
+function renderNotConfigured() {
+  document.getElementById('appContent').innerHTML = `
+    <div class="state-screen">
+      <div class="state-icon">⚙️</div>
+      <div class="state-title">Catálogo no configurado</div>
+      <div class="state-sub">El administrador debe conectar la base de datos.<br>
+      Si eres el administrador, abre <strong>planta.html</strong> y pega tu SUPABASE_URL y SUPABASE_KEY.</div>
+    </div>`;
+}
+
+// ── INIT ──
+async function init() {
+  loadLogo(); // no await — carga en paralelo
+
+  const codigo = getCodigoFromURL();
+  if (!codigo) { renderNoCode(); return; }
+  if (!SB_CONFIGURED) { renderNotConfigured(); return; }
+
+  try {
+    const planta = await fetchPlanta(codigo);
+    if (planta) renderPlanta(planta);
+    else renderError(codigo);
+  } catch(e) {
+    renderError(codigo);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
